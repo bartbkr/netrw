@@ -302,6 +302,7 @@ endif
 call s:NetrwInit("g:netrw_alto"        , &sb)
 call s:NetrwInit("g:netrw_altv"        , &spr)
 call s:NetrwInit("g:netrw_banner"      , 1)
+call s:NetrwInit("g:netrw_banner_verbose"      , 0)
 call s:NetrwInit("g:netrw_browse_split", 0)
 call s:NetrwInit("g:netrw_bufsettings" , "noma nomod nonu nobl nowrap ro nornu")
 call s:NetrwInit("g:netrw_chgwin"      , -1)
@@ -9459,12 +9460,14 @@ fun! s:PerformListing(islocal)
   if g:netrw_banner
 "   call Decho("--set up banner",'~'.expand("<slnum>"))
    NetrwKeepj call setline(1,'" ============================================================================')
-   if exists("g:netrw_pchk")
-    " this undocumented option allows pchk to run with different versions of netrw without causing spurious
-    " failure detections.
-    NetrwKeepj call setline(2,'" Netrw Directory Listing')
-   else
-    NetrwKeepj call setline(2,'" Netrw Directory Listing                                        (netrw '.g:loaded_netrw.')')
+   if g:netrw_banner_verbose
+      if exists("g:netrw_pchk")
+       " this undocumented option allows pchk to run with different versions of netrw without causing spurious
+       " failure detections.
+       NetrwKeepj call setline(2,'" Netrw Directory Listing')
+      else
+       NetrwKeepj call setline(2,'" Netrw Directory Listing                                        (netrw '.g:loaded_netrw.')')
+      endif
    endif
    if exists("g:netrw_pchk")
     let curdir= substitute(b:netrw_curdir,expand("$HOME"),'~','')
@@ -9497,14 +9500,18 @@ fun! s:PerformListing(islocal)
    if g:netrw_sort_by =~# "^n"
 "   call Decho("directories will be sorted by name",'~'.expand("<slnum>"))
     " sorted by name
-    NetrwKeepj put ='\"   Sorted by      '.sortby
-    NetrwKeepj put ='\"   Sort sequence: '.g:netrw_sort_sequence
-    let w:netrw_bannercnt= w:netrw_bannercnt + 2
+    if g:netrw_banner_verbose
+        NetrwKeepj put ='\"   Sorted by      '.sortby
+        NetrwKeepj put ='\"   Sort sequence: '.g:netrw_sort_sequence
+        let w:netrw_bannercnt= w:netrw_bannercnt + 2
+    endif
    else
 "   call Decho("directories will be sorted by size or time",'~'.expand("<slnum>"))
     " sorted by size or date
-    NetrwKeepj put ='\"   Sorted by '.sortby
-    let w:netrw_bannercnt= w:netrw_bannercnt + 1
+    if g:netrw_banner_verbose
+        NetrwKeepj put ='\"   Sorted by '.sortby
+        let w:netrw_bannercnt= w:netrw_bannercnt + 1
+    endif
    endif
    exe "sil! NetrwKeepj ".w:netrw_bannercnt
 "  else " Decho
@@ -9512,7 +9519,7 @@ fun! s:PerformListing(islocal)
   endif
 
   " show copy/move target, if any {{{3
-  if g:netrw_banner
+  if g:netrw_banner 
    if exists("s:netrwmftgt") && exists("s:netrwmftgt_islocal")
 "    call Decho("--show copy/move target<".s:netrwmftgt.">",'~'.expand("<slnum>"))
     NetrwKeepj put =''
@@ -9529,9 +9536,9 @@ fun! s:PerformListing(islocal)
   endif
 
   " Hiding...  -or-  Showing... {{{3
-  if g:netrw_banner
+  if g:netrw_banner 
 "   call Decho("--handle hiding/showing (g:netrw_hide=".g:netrw_list_hide." g:netrw_list_hide<".g:netrw_list_hide.">)",'~'.expand("<slnum>"))
-   if g:netrw_list_hide != "" && g:netrw_hide
+   if g:netrw_list_hide != "" && g:netrw_hide && g:netrw_banner_verbose
     if g:netrw_hide == 1
      NetrwKeepj put ='\"   Hiding:        '.g:netrw_list_hide
     else
@@ -9544,7 +9551,9 @@ fun! s:PerformListing(islocal)
 "   call Decho("ro=".&l:ro." ma=".&l:ma." mod=".&l:mod." wrap=".&l:wrap." (filename<".expand("%")."> win#".winnr()." ft<".&ft.">)",'~'.expand("<slnum>"))
    let quickhelp   = g:netrw_quickhelp%len(s:QuickHelp)
 "   call Decho("quickhelp   =".quickhelp,'~'.expand("<slnum>"))
-   NetrwKeepj put ='\"   Quick Help: <F1>:help  '.s:QuickHelp[quickhelp]
+   if g:netrw_banner_verbose
+      NetrwKeepj put ='\"   Quick Help: <F1>:help  '.s:QuickHelp[quickhelp]
+   endif
 "   call Decho("ro=".&l:ro." ma=".&l:ma." mod=".&l:mod." wrap=".&l:wrap." (filename<".expand("%")."> win#".winnr()." ft<".&ft.">)",'~'.expand("<slnum>"))
    NetrwKeepj put ='\" =============================================================================='
    let w:netrw_bannercnt= w:netrw_bannercnt + 2
